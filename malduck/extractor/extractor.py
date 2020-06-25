@@ -355,7 +355,7 @@ class Extractor(ExtractorBase, metaclass=MetaExtractor):
             return extractor_wrapper
 
     @staticmethod
-    def final(method):
+    def final(method: Callable[..., bool]) -> ExtractorMethod:
         return Extractor.extractor(final=True)(method)
 
     # Internals
