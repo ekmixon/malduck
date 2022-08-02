@@ -50,10 +50,7 @@ class PlaintextKeyBlob(BaseBlob):
         :return: Tuple (`algorithm`, `key`). `Algorithm` is one of: "AES-128", "AES-192", "AES-256"
         :rtype: Tuple[str, bytes]
         """
-        if self.key is not None:
-            return self.types[len(self.key)], self.key
-
-        return None
+        return (self.types[len(self.key)], self.key) if self.key is not None else None
 
 
 BlobTypes = {

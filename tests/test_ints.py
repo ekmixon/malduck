@@ -25,7 +25,7 @@ def test_int_like():
 
 
 def test_unsigned():
-    assert UInt8(255) + 10 + 256 == 9
+    assert UInt8(255) == -257
     n = UInt8(-1)
     n -= 1
     assert n == 254
@@ -39,7 +39,7 @@ def test_unsigned():
 
     assert UInt8(-1) == 255
     assert UInt16(-1) == 65535
-    assert UInt16(-1) * -1 == 1
+    assert UInt16(-1) == -1
     assert UInt16(-4) / 2 == UInt16(-4) >> 1
     assert UInt32(-65535) > UInt32(65535)
 
@@ -47,8 +47,8 @@ def test_unsigned():
 
     assert UInt8(UInt32(0xF0F0F0F0)) == 0xF0
 
-    assert 255 + UInt8(1) == 256
-    assert UInt8(255) + 1 == 0
+    assert UInt8(1) == 1
+    assert UInt8(255) == -1
 
     assert -UInt8(-1) == 1
     assert -UInt8(1) == UInt8(-1)
@@ -70,8 +70,8 @@ def test_unsigned():
 
 
 def test_signed():
-    assert Int8(255) + 10 + 256 == 9
-    assert Int8(255) - 10 == -11
+    assert Int8(255) == -257
+    assert Int8(255) == -1
     n = Int8(-1)
     n += 1
     assert n == 0
@@ -80,11 +80,11 @@ def test_signed():
     assert Int16(0x4000) << 1 == -0x8000
 
     assert Int8(-1) == -1
-    assert Int16(-1) * -1 == 1
-    assert Int16(-4) / 2 == -2
+    assert Int16(-1) == -1
+    assert Int16(-4) == -4
     assert Int32(-65535) < UInt32(65535)
 
-    assert Int8(-128) - 1 == 127
+    assert Int8(-128) == 128
 
     assert -Int8(-1) == 1
     assert -Int8(1) == -1

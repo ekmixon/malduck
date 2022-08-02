@@ -29,7 +29,7 @@ def is_config_better(base_config: Config, new_config: Config) -> bool:
 def encode_for_json(data: Any) -> Any:
     if isinstance(data, bytes):
         return data.decode()
-    elif isinstance(data, list) or isinstance(data, tuple):
+    elif isinstance(data, (list, tuple)):
         return [encode_for_json(item) for item in data]
     elif isinstance(data, dict):
         return {key: encode_for_json(value) for key, value in data.items()}
@@ -376,6 +376,4 @@ class ProcmemExtractManager:
         Returns collected config, but if family is not matched - returns empty dict.
         Family is not included in config itself, look at :py:attr:`ProcmemExtractManager.family`.
         """
-        if self.family is None:
-            return {}
-        return self.collected_config
+        return {} if self.family is None else self.collected_config

@@ -64,26 +64,29 @@ class MetaIntType(type):
     fmt: str
 
     @property
-    def mask(cls) -> int:
+    def mask(self) -> int:
         """
         Mask for potentially overflowing operations
         """
-        return (2 ** cls.bits) - 1
+        return 2**self.bits - 1
 
     @property
-    def invert_mask(cls) -> int:
+    def invert_mask(self) -> int:
         """
         Mask for sign bit
         """
-        return (2 ** cls.bits) >> 1
+        return 2**self.bits >> 1
 
-    def __mul__(cls: Type[T], multiplier: int) -> Type[MultipliedIntTypeBase[T]]:  # type: ignore
-        # mypy doesn't know how to deal with metaclasses
-        # that are used for specific base class instantiation
-        # We're doing our best, but 'type: ignore' is still needed here
+    def __mul__(self, multiplier: int) -> Type[MultipliedIntTypeBase[T]]:  # type: ignore
+    # mypy doesn't know how to deal with metaclasses
+    # that are used for specific base class instantiation
+    # We're doing our best, but 'type: ignore' is still needed here
+
+
+
 
         class MultipliedIntTypeClass(MultipliedIntTypeBase):
-            int_type: Type[T] = cls
+            int_type: Type[T] = self
             mul = multiplier
 
             @staticmethod
@@ -94,15 +97,16 @@ class MetaIntType(type):
                 :param offset: Buffer offset
                 :return: tuple of IntType instances or None if there are not enough data to unpack
                 """
-                fmt = cls.fmt + cls.fmt[-1] * (multiplier - 1)
+                fmt = self.fmt + self.fmt[-1] * (multiplier - 1)
                 try:
                     ret = unpack_from(fmt, other, offset=offset)
                 except error:
                     return None
-                ints: Iterator[T] = map(cls, ret)
+                ints: Iterator[T] = map(self, ret)
                 return tuple(ints)
 
-        MultipliedIntTypeClass.__name__ = "Multiplied" + cls.__name__
+
+        MultipliedIntTypeClass.__name__ = f"Multiplied{self.__name__}"
         return MultipliedIntTypeClass
 
 
@@ -238,11 +242,11 @@ class IntType(int, IntTypeBase, metaclass=MetaIntType):
 
     def pack(self) -> bytes:
         """Pack value into bytes with little-endian order"""
-        return pack("<" + self.fmt, int(self))
+        return pack(f"<{self.fmt}", int(self))
 
     def pack_be(self) -> bytes:
         """Pack value into bytes with big-endian order"""
-        return pack(">" + self.fmt, int(self))
+        return pack(f">{self.fmt}", int(self))
 
     @classmethod
     def unpack(
@@ -263,7 +267,7 @@ class IntType(int, IntTypeBase, metaclass=MetaIntType):
             Fixed-size integer operations are 4-5 times slower than equivalent on built-in integer types
         """
         try:
-            ret = unpack_from("<" + cls.fmt, other, offset=offset)
+            ret = unpack_from(f"<{cls.fmt}", other, offset=offset)
         except error:
             return None
         return cls(ret[0]) if fixed else ret[0]
@@ -287,7 +291,7 @@ class IntType(int, IntTypeBase, metaclass=MetaIntType):
             Fixed-size integer operations are 4-5 times slower than equivalent on built-in integer types
         """
         try:
-            ret = unpack_from(">" + cls.fmt, other, offset=offset)
+            ret = unpack_from(f">{cls.fmt}", other, offset=offset)
         except error:
             return None
         return cls(ret[0]) if fixed else ret[0]

@@ -50,7 +50,7 @@ DISPLACEMENT_TABLE = array.array("B", [get_displacement(x) for x in range(8192)]
 COMPRESSED_MASK = 1 << 15
 SIGNATURE_MASK = 3 << 12
 SIZE_MASK = (1 << 12) - 1
-TAG_MASKS = [(1 << i) for i in range(0, 8)]
+TAG_MASKS = [1 << i for i in range(8)]
 
 
 def decompress_data(cdata: bytes) -> bytes:
@@ -100,18 +100,14 @@ def decompress_data(cdata: bytes) -> bytes:
 
                         output_fd.seek(0, 2)
 
-                        output_fd.write(data)
-
                     else:
                         data = in_fd.read(1)
 
-                        output_fd.write(data)
+                    output_fd.write(data)
 
         else:
             # Block is not compressed
             data = in_fd.read(size + 1)
             output_fd.write(data)
 
-    result = output_fd.getvalue()
-
-    return result
+    return output_fd.getvalue()

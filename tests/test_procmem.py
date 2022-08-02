@@ -119,7 +119,7 @@ def test_calc_exe():
         assert data.startswith(b"CRIM")
         assert len(data) == 4750
         # Check relocations
-        assert not ppe.readv(0x10016C2, 4) == 0x10551f8
+        assert ppe.readv(0x10016C2, 4) != 0x10551f8
         assert len(ppe.pe.section(".text").get_data()) == 0x52e00
 
 
@@ -190,13 +190,13 @@ def test_simple_findv():
     ]
     p = procmem(payload, regions=regions)
 
-    assert list(p.findv(b"12")) == []
+    assert not list(p.findv(b"12"))
     assert list(p.findv(b"ab")) == [0x10000]
-    assert list(p.findv(b"ab", addr=0x10002)) == []
-    assert list(p.findv(b"ab34")) == []
+    assert not list(p.findv(b"ab", addr=0x10002))
+    assert not list(p.findv(b"ab34"))
     assert list(p.findv(b"abcd")) == [0x10000]
-    assert list(p.findv(b"abcdef")) == []
-    assert list(p.findv(b"cdef")) == []
+    assert not list(p.findv(b"abcdef"))
+    assert not list(p.findv(b"cdef"))
     assert list(p.findv(b"ef")) == [0x10010]
 
 

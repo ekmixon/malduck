@@ -65,7 +65,7 @@ class Serpent:
         key_word32 = [0] * 32
         i = 0
         while key:
-            key_word32[i] = struct.unpack("<L", key[0:4])[0]
+            key_word32[i] = struct.unpack("<L", key[:4])[0]
             key = key[4:]
             i += 1
 
@@ -98,7 +98,7 @@ class Serpent:
         ciphertext = b""
 
         while block:
-            a, b, c, d = struct.unpack("<4L", block[0:16])
+            a, b, c, d = struct.unpack("<4L", block[:16])
             temp = [a, b, c, d]
             encrypt(self.key_context, temp)
             ciphertext += struct.pack("<4L", *temp)
@@ -111,9 +111,7 @@ class Serpent:
 # Private.
 #
 
-WORD_BIGENDIAN = 0
-if sys.byteorder == "big":
-    WORD_BIGENDIAN = 1
+WORD_BIGENDIAN = 1 if sys.byteorder == "big" else 0
 
 
 def rotr32(x: int, n: int) -> int:

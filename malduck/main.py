@@ -49,7 +49,7 @@ def fixpe(mempath, outpath, force):
                 "Input file looks like correct PE file. Use -f if you want to fix it anyway."
             )
             return 1
-        outpath = outpath or mempath + ".exe"
+        outpath = outpath or f"{mempath}.exe"
         if not force and os.path.isfile(outpath):
             click.confirm(f"{outpath} exists. Overwrite?", abort=True)
         with open(outpath, "wb") as f:
@@ -95,11 +95,7 @@ def extract(ctx, paths, base, analysis, modules):
                 click.echo(message, err=True)
                 click.echo(json.dumps(config, indent=4, sort_keys=True))
 
-    if base is None:
-        base = 0
-    else:
-        base = int(base, 0)
-
+    base = 0 if base is None else int(base, 0)
     extractor_modules = ExtractorModules(modules)
     extract_manager = ExtractManager(extractor_modules)
 

@@ -87,7 +87,7 @@ class ProcessMemoryELF(ProcessMemoryBinary):
                         segment.header["p_offset"] - presegment_len,
                     )
                 )
-        if len(regions) == 0:
+        if not regions:
             raise elftools.elf.elffile.ELFError("No regions in ELF file!")
         if imgbase is None:
             raise elftools.elf.elffile.ELFError("Can't find ELF image base!")

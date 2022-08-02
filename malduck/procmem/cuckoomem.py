@@ -29,10 +29,7 @@ class CuckooProcessMemory(ProcessMemory):
             self.regions.append(Region(addr, size, state, typ, protect, ptr))
             ptr += size
         if base is None:
-            if self.regions:
-                self.imgbase = self.regions[0].addr
-            else:
-                self.imgbase = 0
+            self.imgbase = self.regions[0].addr if self.regions else 0
 
 
 cuckoomem = CuckooProcessMemory

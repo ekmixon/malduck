@@ -29,8 +29,6 @@ def ipv4(s: Union[bytes, int]) -> Optional[str]:
     elif isinstance(s, bytes):
         if len(s) == 4:
             return socket.inet_ntoa(s)
-        if re.match(ipv4_regex, s):
-            return s.decode()
-        return None
+        return s.decode() if re.match(ipv4_regex, s) else None
     else:
         raise TypeError("Wrong argument type, only bytes and int are allowed.")

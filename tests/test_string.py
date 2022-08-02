@@ -58,12 +58,12 @@ def test_ipv4():
     assert ipv4(b"ABCD") == "65.66.67.68"
 
     assert ipv4(b"ABC") is None
-    assert bool(ipv4(b"ABC")) is False
-    assert bool(ipv4(b"ABCD")) is True
-    assert bool(ipv4(b"ABCDE")) is False
-    assert bool(ipv4(b"1.2.3.4")) is True
-    assert bool(ipv4(b"123.234.32.41")) is True
-    assert bool(ipv4(b"323.234.32.41")) is False
+    assert not bool(ipv4(b"ABC"))
+    assert bool(ipv4(b"ABCD"))
+    assert not bool(ipv4(b"ABCDE"))
+    assert bool(ipv4(b"1.2.3.4"))
+    assert bool(ipv4(b"123.234.32.41"))
+    assert not bool(ipv4(b"323.234.32.41"))
     assert ipv4(b"1.2.3.4") == "1.2.3.4"
     assert ipv4(b"123.234.32.41") == "123.234.32.41"
     assert ipv4(b"255.255.255.255") == "255.255.255.255"

@@ -97,9 +97,7 @@ class ProcessMemory:
             self.mapped_memory = buf
         elif isinstance(buf, bytes):
             self.memory = bytearray(buf)
-        elif isinstance(buf, bytearray):
-            self.memory = buf
-        elif isinstance(buf, MemoryBuffer):
+        elif isinstance(buf, (bytearray, MemoryBuffer)):
             self.memory = buf
         else:
             raise TypeError(
@@ -210,10 +208,9 @@ class ProcessMemory:
         :type base: int (optional, default is provided by specialized class)
         :rtype: :class:`ProcessMemory`
         """
-        copied = cls(
+        return cls(
             memory.m, base=base or memory.imgbase, regions=memory.regions, **kwargs
         )
-        return copied
 
     @property
     def length(self):
@@ -292,12 +289,12 @@ class ProcessMemory:
                 if length is not None:
                     length -= region.addr - addr
                 addr = region.addr
-            else:
-                if length is not None:
-                    raise ValueError(
-                        "Don't know how to retrieve length-limited regions with offset from unmapped area"
-                    )
+            elif length is None:
                 offset = region.offset
+            else:
+                raise ValueError(
+                    "Don't know how to retrieve length-limited regions with offset from unmapped area"
+                )
             # If we're out of length after adjustment: time to stop
             if length is not None and length <= 0:
                 return
@@ -345,8 +342,7 @@ class ProcessMemory:
             mapping_length += region.size
             if mapping_length >= length:
                 return region.v2p(addr)
-        else:
-            return None
+        return None
 
     def p2v(self, off, length=None):
         """
@@ -371,8 +367,7 @@ class ProcessMemory:
             mapping_length += region.size
             if mapping_length >= length:
                 return region.p2v(off)
-        else:
-            return None
+        return None
 
     def is_addr(self, addr):
         """
@@ -822,8 +817,7 @@ class ProcessMemory:
             query = query.decode()
 
         rule = Yara(strings=YaraString(query, type=YaraString.HEX))
-        match = yara_fn(rule, addr, length, extended=True)
-        if match:
+        if match := yara_fn(rule, addr, length, extended=True):
             for string_match in match.r.string:
                 yield string_match.offset
 

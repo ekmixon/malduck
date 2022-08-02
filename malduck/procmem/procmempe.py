@@ -72,8 +72,7 @@ class ProcessMemoryPE(ProcessMemoryBinary):
             raise ValueError("imgbase out of regions")
         # Expected m type: bytearray
         m = bytearray(self.readp(offset))
-        pe = PE(data=m, fast_load=fast_load)
-        return pe
+        return PE(data=m, fast_load=fast_load)
 
     def _reload_as_image(self) -> None:
         # Load PE data from imgbase offset
@@ -87,18 +86,18 @@ class ProcessMemoryPE(ProcessMemoryBinary):
         # Reset regions
         self.regions = [Region(self.imgbase, pe.headers_size, 0, 0, 0, 0)]
         # Load image sections
-        for section in pe.sections:
-            if section.SizeOfRawData > 0:
-                self.regions.append(
-                    Region(
-                        self.imgbase + section.VirtualAddress,
-                        section.SizeOfRawData,
-                        0,
-                        0,
-                        0,
-                        section.PointerToRawData,
-                    )
-                )
+        self.regions.extend(
+            Region(
+                self.imgbase + section.VirtualAddress,
+                section.SizeOfRawData,
+                0,
+                0,
+                0,
+                section.PointerToRawData,
+            )
+            for section in pe.sections
+            if section.SizeOfRawData > 0
+        )
 
     def is_valid(self) -> bool:
         if self.readv(self.imgbase, 2) != self.__magic__:
@@ -130,13 +129,7 @@ class ProcessMemoryPE(ProcessMemoryBinary):
         if not pe.validate_import_names():
             return False
         # If resources are corrupted - possible dump
-        if not pe.validate_resources():
-            return False
-        # If first 4kB seem to be zero-padded - possible dump
-        if not pe.validate_padding():
-            return False
-        # No errors, so it must be PE file
-        return True
+        return bool(pe.validate_padding()) if pe.validate_resources() else False
 
     @property
     def pe(self) -> PE:
@@ -162,7 +155,7 @@ class ProcessMemoryPE(ProcessMemoryBinary):
         # Read headers (until first section page in raw data)
         pe = PE(self.readv(self.imgbase, current_offs), fast_load=True)
 
-        for idx, section in enumerate(pe.sections):
+        for section in pe.sections:
             # Find corresponding region
             section_region = self.addr_region(self.imgbase + section.VirtualAddress)
             # No corresponding region? BSS.
@@ -190,11 +183,8 @@ class ProcessMemoryPE(ProcessMemoryBinary):
 
         pe.optional_header.ImageBase = self.imgbase
 
-        # Generate header data
-        pe_data = b"".join([bytes(pe.pe.write())] + data)
-
         # Return PE file data
-        return pe_data
+        return b"".join([bytes(pe.pe.write())] + data)
 
 
 procmempe = ProcessMemoryPE

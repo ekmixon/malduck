@@ -120,7 +120,7 @@ class Yara:
         if not strings:
             raise ValueError("No strings specified")
 
-        if isinstance(strings, str) or isinstance(strings, YaraString):
+        if isinstance(strings, (str, YaraString)):
             strings = {"string": strings}
 
         yara_strings = "\n        ".join(
@@ -191,7 +191,7 @@ class Yara:
         matches = YaraRulesetMatch(
             self.rules.match(**kwargs), offset_mapper=offset_mapper
         )
-        return YaraRulesetOffsets(matches) if not extended else matches
+        return matches if extended else YaraRulesetOffsets(matches)
 
 
 class YaraStringType(enum.IntEnum):
@@ -230,7 +230,7 @@ class YaraString:
             str_value = f"/{str_regex}/"
         else:
             raise ValueError(f"Unknown YaraString type: {self.type}")
-        return str_value + "".join([" " + modifier for modifier in self.modifiers])
+        return str_value + "".join([f" {modifier}" for modifier in self.modifiers])
 
 
 class YaraRulesetMatch(_Mapper):
@@ -284,7 +284,7 @@ class YaraRulesetMatch(_Mapper):
         real_ident = identifier.lstrip("$")
         # Add group identifiers ($str1, $str2 => "str")
         match_ident = re.match(r"^\$(\w+?[a-zA-Z])_?(\d*)$", identifier)
-        group_ident = match_ident.group(1) if match_ident else real_ident
+        group_ident = match_ident[1] if match_ident else real_ident
         return real_ident, group_ident
 
     def remap(self, offset_mapper=None):

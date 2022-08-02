@@ -99,14 +99,8 @@ def ap_depack(source: bytes) -> bytearray:
 
                     length = ap_getgamma(ud)
 
-                    for _ in range(length):
-                        ud.destination.append(ud.destination[-offs])
                 else:
-                    if lwm == 0:
-                        offs -= 3
-                    else:
-                        offs -= 2
-
+                    offs -= 3 if lwm == 0 else 2
                     offs <<= 8
                     offs += ord(ud.source.read(1))
 
@@ -119,11 +113,10 @@ def ap_depack(source: bytes) -> bytearray:
                     if offs < 128:
                         length += 2
 
-                    for _ in range(length):
-                        ud.destination.append(ud.destination[-offs])
-
                     r0 = offs
 
+                for _ in range(length):
+                    ud.destination.append(ud.destination[-offs])
                 lwm = 1
         else:
             ud.destination += ud.source.read(1)

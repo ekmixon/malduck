@@ -179,7 +179,7 @@ class PE(object):
         :rtype: :class:`pefile.Structure`
         """
         return self.optional_header.DATA_DIRECTORY[
-            pefile.DIRECTORY_ENTRY.get("IMAGE_DIRECTORY_ENTRY_" + name)
+            pefile.DIRECTORY_ENTRY.get(f"IMAGE_DIRECTORY_ENTRY_{name}")
         ]
 
     def structure(self, rva: int, format: Any) -> Any:
@@ -263,11 +263,15 @@ class PE(object):
         """
         Returns True if area between first non-bss section and first 4kB doesn't have only null-bytes
         """
-        section_start_offs = None
-        for section in self.sections:
-            if section.SizeOfRawData > 0:
-                section_start_offs = section.PointerToRawData
-                break
+        section_start_offs = next(
+            (
+                section.PointerToRawData
+                for section in self.sections
+                if section.SizeOfRawData > 0
+            ),
+            None,
+        )
+
         if section_start_offs is None:
             # No non-bss sections? Is it real PE file?
             return False
@@ -276,15 +280,17 @@ class PE(object):
             section_start_offs = 0x800
         try:
             data_len = 0x1000 - section_start_offs
-            if not data_len:
-                # Probably fixpe'd - seems to be ok
-                return True
-            return not all(
-                b in [0, "\0"]
-                for b in self.pe.__data__[
-                    section_start_offs : section_start_offs + data_len
-                ]
+            return (
+                any(
+                    b not in [0, "\0"]
+                    for b in self.pe.__data__[
+                        section_start_offs : section_start_offs + data_len
+                    ]
+                )
+                if data_len
+                else True
             )
+
         except pefile.PEFormatError:
             return False
 

@@ -33,10 +33,9 @@ class Rabbit:
             self.set_iv(iv)
 
     def g_func(self, x: int) -> int:
-        x = x & 0xFFFFFFFF
-        x = (x * x) & 0xFFFFFFFFFFFFFFFF
-        result = (x >> 32) ^ (x & 0xFFFFFFFF)
-        return result
+        x &= 0xFFFFFFFF
+        x = x**2 & 0xFFFFFFFFFFFFFFFF
+        return (x >> 32) ^ (x & 0xFFFFFFFF)
 
     def set_key(self, key: bytes) -> None:
         # Four subkeys.
@@ -65,7 +64,7 @@ class Rabbit:
         s.carry = 0
 
         # Iterate system four times.
-        for i in range(4):
+        for _ in range(4):
             self.next_state(self.ctx.m)
 
         # Modify the counters.
@@ -97,7 +96,7 @@ class Rabbit:
         self.ctx.w.x = self.ctx.m.x[:]
 
         # Iterate system four times.
-        for i in range(4):
+        for _ in range(4):
             self.next_state(self.ctx.w)
 
     def next_state(self, state: State) -> None:

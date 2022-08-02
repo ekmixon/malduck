@@ -40,9 +40,11 @@ class IDAVM(MemoryBuffer):
                     return
 
     def __getitem__(self, item):
-        data = []
-        for ea_start, ea_end in self._get_ea_range(item):
-            data.append(idc.get_bytes(ea_start, ea_end - ea_start))
+        data = [
+            idc.get_bytes(ea_start, ea_end - ea_start)
+            for ea_start, ea_end in self._get_ea_range(item)
+        ]
+
         return b"".join(data)
 
     def __len__(self):
@@ -74,7 +76,7 @@ class IDAProcessMemory(ProcessMemory):
             )
         regions = []
         for seg in idautils.Segments():
-            off = 0 if not regions else regions[-1].end_offset
+            off = regions[-1].end_offset if regions else 0
             region = Region(seg, idc.get_segm_end(seg) - seg, 0, 0, 0, off)
             regions.append(region)
         super().__init__(IDAVM(self), regions=regions)

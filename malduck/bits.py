@@ -18,7 +18,7 @@ def rol(value: int, count: int, bits: int = 32) -> int:
        :py:meth:`malduck.ints.IntType.rol`
 
     """
-    count = (bits - 1) & count
+    count &= bits - 1
     value = (value << count) | ((2 ** count - 1) & (value >> (bits - count)))
     return value % 2 ** bits
 

@@ -18,4 +18,4 @@ def xor(key: Union[int, bytes], data: bytes) -> bytes:
     """
     if isinstance(key, int):
         key = bytes([key])
-    return bytes([a ^ b for a, b in zip(data, cycle(key))])
+    return bytes(a ^ b for a, b in zip(data, cycle(key)))

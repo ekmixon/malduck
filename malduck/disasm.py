@@ -76,12 +76,9 @@ class Operand:
         :rtype: str
         """
         if self.is_mem:
-            reg = self.op.value.mem.base or self.op.value.mem.index
-            if reg:
+            if reg := self.op.value.mem.base or self.op.value.mem.index:
                 return self.regs[reg]
-        if self.is_reg:
-            return self.regs[self.op.reg]
-        return None
+        return self.regs[self.op.reg] if self.is_reg else None
 
     @property
     def mem(self) -> Optional[Memory]:
@@ -113,9 +110,7 @@ class Operand:
             other = (other,)
         if self.is_reg and self.reg in other:
             return True
-        if self.is_mem and self.reg in other:
-            return True
-        return False
+        return bool(self.is_mem and self.reg in other)
 
     def __str__(self) -> str:
         if self.is_imm:
@@ -135,7 +130,7 @@ class Operand:
                 s.append("%d*%s" % (m.scale, m.index))
             if m.disp:
                 s.append("0x%08x" % (m.disp % 2 ** 32))
-            return "%s [%s]" % (m.size, "+".join(s))
+            return f'{m.size} [{"+".join(s)}]'
         else:
             raise Exception("Invalid Operand type")
 
@@ -187,9 +182,11 @@ class Instruction(object):
         self.insn = insn
         self.mnem = insn.mnemonic
 
-        operands: List[Optional[Operand]] = []
-        for op in insn.operands + [None, None, None]:
-            operands.append(Operand(op, self.x64) if op else None)
+        operands: List[Optional[Operand]] = [
+            Operand(op, self.x64) if op else None
+            for op in insn.operands + [None, None, None]
+        ]
+
         self.operands = operands[0], operands[1], operands[2]
 
     @staticmethod
@@ -219,18 +216,14 @@ class Instruction(object):
         """Instruction address"""
         if self._addr:
             return self._addr
-        if self.insn is not None:
-            return self.insn.address
-        return None
+        return self.insn.address if self.insn is not None else None
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Instruction):
             return False
         if self.mnem != other.mnem or self.addr != other.addr:
             return False
-        if self.operands == other.operands:
-            return True
-        return False
+        return self.operands == other.operands
 
     def __str__(self) -> str:
         operands = []
@@ -241,7 +234,7 @@ class Instruction(object):
         if self.op3 is not None:
             operands.append(str(self.op3))
         if operands:
-            return "%s %s" % (self.mnem, ", ".join(operands))
+            return f'{self.mnem} {", ".join(operands)}'
         return self.mnem or "<invalid mnem>"
 
 
